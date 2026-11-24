@@ -1,2 +1,37 @@
-venv/
+# Environment & Secrets (NEVER commit .env; keep .env.example tracked)
 .env
+.env.local
+.env.*.local
+
+# Python Virtual Environments & Bytecode
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# Local Vector DB & Storage
+qdrant_storage/
+*.db
+*.sqlite3
+
+# Heavy Data & Processed Caches (prevent bloating Git history)
+data/raw/*.pdf
+data/processed/*.json
+data/processed/*.md
+
+# Logs & Temp Files
+*.log
+logs/
+tmp/
+
+# IDE & OS Junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
