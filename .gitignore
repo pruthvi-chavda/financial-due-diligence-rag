@@ -21,9 +21,12 @@ qdrant_storage/
 *.sqlite3
 
 # Heavy Data & Processed Caches (prevent bloating Git history)
-data/raw/*.pdf
-data/processed/*.json
-data/processed/*.md
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/chunks/*
+!data/chunks/.gitkeep
 
 # Logs & Temp Files
 *.log
