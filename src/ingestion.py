@@ -13,6 +13,8 @@ from pathlib import Path
 
 from langchain_ollama import ChatOllama
 from src.config import get_model_name
+import time 
+from langchain_groq import ChatGroq
 
 CHUNKS_DATA_DIR = PROCESSED_DATA_DIR.parent / "chunks"
 
@@ -113,7 +115,7 @@ def export_chunks(chunks: list[Document], pdf_stem: str) -> Path:
 
 def summarize_tables(tables_md: list[str], source_file: str) -> list[Document]:
     fast_model = get_model_name(role="fast", limit_reached=False)
-    llm = ChatOllama(model=fast_model, temperature=0)
+    llm = ChatGroq(model=fast_model, temperature=0)
 
     summary_prompt = """Summarize this financial table in 2-3 clear sentences.
     Include the main metrics, time periods, units/currency, and key trends so a user searching in plain English can find it.
@@ -129,8 +131,9 @@ def summarize_tables(tables_md: list[str], source_file: str) -> list[Document]:
         table_markdown = table.strip()
         if not table_markdown:
             continue
-
-        summary = llm.invoke(summary_prompt.format(table_md=table_markdown)).content.strip()
+        compact_table = re.sub(r" {2,}", " ", table_markdown)
+        summary = llm.invoke(summary_prompt.format(table_md=compact_table)).content.strip()
+        time.sleep(5)
 
         doc = Document(
             page_content=f"Table Summary: {summary}\n\n{table_markdown}",
