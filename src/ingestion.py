@@ -10,6 +10,10 @@ import json
 import re
 import uuid
 from pathlib import Path
+
+from langchain_ollama import ChatOllama
+from src.config import get_model_name
+
 CHUNKS_DATA_DIR = PROCESSED_DATA_DIR.parent / "chunks"
 
 
@@ -106,19 +110,59 @@ def export_chunks(chunks: list[Document], pdf_stem: str) -> Path:
     return out_file
 
 
-if __name__ == "__main__":
-    tcs_pdf = RAW_DATA_DIR / "tcs_fy26_financials.pdf"
-    out_dir = PROCESSED_DATA_DIR / tcs_pdf.stem
 
-    full_md, tables = pdf_to_markdown(tcs_pdf)
+def summarize_tables(tables_md: list[str], source_file: str) -> list[Document]:
+    fast_model = get_model_name(role="fast", limit_reached=False)
+    llm = ChatOllama(model=fast_model, temperature=0)
+
+    summary_prompt = """Summarize this financial table in 2-3 clear sentences.
+    Include the main metrics, time periods, units/currency, and key trends so a user searching in plain English can find it.
+    Do not add any preamble.
+    
+    Table:
+    {table_md}"""
+
+    table_docs: list[Document] = []
+
+    for i, table in enumerate(tables_md, start=1):
+        print(f"Summarizing table {i}/{len(tables_md)}...")
+        table_markdown = table.strip()
+        if not table_markdown:
+            continue
+
+        summary = llm.invoke(summary_prompt.format(table_md=table_markdown)).content.strip()
+
+        doc = Document(
+            page_content=f"Table Summary: {summary}\n\n{table_markdown}",
+            metadata={
+                "source_file": source_file,
+                "chunk_type": "table",
+                "table_index": i,
+                "chunk_id": str(uuid.uuid4()),
+            },
+        )
+        table_docs.append(doc)
+
+    return table_docs
+
+def ingest_pdf(pdf_path: Path) -> list[Document]:
+    out_dir = PROCESSED_DATA_DIR / pdf_path.stem
+
+    full_md, tables = pdf_to_markdown(pdf_path)
     export_uncleaned_md(full_md, tables, out_dir)
 
     cleaned_md = clean_markdown(full_md)
     (out_dir / "text_cleaned.md").write_text(cleaned_md, encoding="utf-8")
 
-    text_chunks = chunking(cleaned_md, tcs_pdf.name)
-    chunks_file = export_chunks(text_chunks, tcs_pdf.stem)
+    text_chunks = chunking(cleaned_md, pdf_path.name)
+    table_chunks = summarize_tables(tables, pdf_path.name)
 
-    print(f"Tables loaded: {len(tables)}")
-    print(f"Text chunks created: {len(text_chunks)}")
-    print(f"Exported chunks to: {chunks_file}")
+    all_docs = text_chunks + table_chunks
+    export_chunks(all_docs, pdf_path.stem)
+    return all_docs
+
+
+if __name__ == "__main__":
+    tcs_pdf = RAW_DATA_DIR / "tcs_fy26_financials.pdf"
+    all_docs = ingest_pdf(tcs_pdf)
+    print(f"Total chunks (text + tables): {len(all_docs)}")
