@@ -114,7 +114,7 @@ def export_chunks(chunks: list[Document], pdf_stem: str) -> Path:
 
 
 def summarize_tables(tables_md: list[str], source_file: str) -> list[Document]:
-    fast_model = get_model_name(role="fast", limit_reached=False)
+    fast_model = get_model_name(role="fast",provider='groq')
     llm = ChatGroq(model=fast_model, temperature=0)
 
     summary_prompt = """Summarize this financial table in 2-3 clear sentences.
