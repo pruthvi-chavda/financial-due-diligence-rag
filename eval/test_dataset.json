@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What were TCS consolidated revenue from operations and EBIT margin in FY 2026?",
+    "source_file": "tcs_fy26_financials.pdf"
+  },
+  {
+    "question": "By what percentage did TCS consolidated revenue grow in FY 2026 compared to FY 2025?",
+    "source_file": "tcs_fy26_financials.pdf"
+  },
+  {
+    "question": "What were NVIDIA's total revenue and Data Center revenue in fiscal year 2026?",
+    "source_file": "nvidia_10k_fy26.pdf"
+  },
+  {
+    "question": "What architecture drove NVIDIA's Data Center revenue growth in fiscal year 2026?",
+    "source_file": "nvidia_10k_fy26.pdf"
+  },
+  {
+    "question": "What percentage of NVIDIA's total revenue came from customers outside the United States in fiscal year 2026?",
+    "source_file": "nvidia_10k_fy26.pdf"
+  }
+]
